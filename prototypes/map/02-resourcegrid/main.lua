@@ -73,28 +73,23 @@ end
 
 function buildResources()
   while #resources < 10 do
-    local emptyTile = false
 
-    while not emptyTile do
-      local x = math.random(1,5)
-      local y = math.random(1,5)
-      local pTile = {x=math.random(1,5), y=math.random(1,5)} 
-      if #resources > 0 then
-        for i=1,#resources do
-          if resources[i].x == pTile.x and resources[i].y == pTile.y then
-            print('blocked tile at x:' .. pTile.x .. ' y:' .. pTile.y)
-            emptyTile = false
-          else          
-            emptyTile = true
-          end
+    local x = math.random(1,5)
+    local y = math.random(1,5)
+    local pTile = {x=math.random(1,5), y=math.random(1,5)} 
+    
+    if #resources > 0 then
+      for i=1,#resources do
+        if resources[i].x == pTile.x and resources[i].y == pTile.y then
+          print('blocked tile at x:' .. pTile.x .. ' y:' .. pTile.y)
+        else          
+          resources[#resources+1] = {x=pTile.x, y=pTile.y}
+          drawResource(pTile.x, pTile.y, .5)
         end
-      else
-        emptyTile = true
       end
-      if emptyTile == true then
-        resources[#resources+1] = {x=pTile.x, y=pTile.y}
-        drawResource(pTile.x, pTile.y, .5)
-      end
+    else
+      resources[#resources+1] = {x=pTile.x, y=pTile.y}
+      drawResource(pTile.x, pTile.y, .5)
     end
   end
 end
