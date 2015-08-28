@@ -68,7 +68,7 @@ function drawResource(dx,dy, marker)
   local y = (((dx + dy)/2) * tileHeight) - (tileHeight/2)
   local resource = display.newCircle( x, y, 20 )
   resource:setFillColor(marker)
-  resource.alpha = .5
+  resource.alpha = .25
 end
 
 function buildResources()
@@ -77,19 +77,25 @@ function buildResources()
     local x = math.random(1,5)
     local y = math.random(1,5)
     local pTile = {x=math.random(1,5), y=math.random(1,5)} 
-    
+    local blocked = true
+
     if #resources > 0 then
       for i=1,#resources do
         if resources[i].x == pTile.x and resources[i].y == pTile.y then
           print('blocked tile at x:' .. pTile.x .. ' y:' .. pTile.y)
-        else          
-          resources[#resources+1] = {x=pTile.x, y=pTile.y}
-          drawResource(pTile.x, pTile.y, .5)
+          blocked = true
+          break
+        else
+          blocked = false          
         end
       end
     else
+      blocked = false
+    end
+    if blocked == false then
       resources[#resources+1] = {x=pTile.x, y=pTile.y}
       drawResource(pTile.x, pTile.y, .5)
+      print(pTile.x .. ',' .. pTile.y)
     end
   end
 end
