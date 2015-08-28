@@ -11,6 +11,12 @@ local walkable = 0 -- used by Jumper to mark obstacles
 local map = {}   -- table representing each grid position
 local resources = {}  -- table tracking the markers we are putting on the grid
 
+-- The following is trickery to get the 255 scale rgb numbers (x/255)
+local red = {r=.835, g=.059, b=.145}
+local blue = {r=.2, g=.412, b=.909}
+local green = {r=.0, g=.6, b=.223}
+local yellow = {r=.933, g=.698, b=.066}
+
 local tileWidth = 128
 local tileHeight = 64
 
@@ -67,8 +73,9 @@ function drawResource(dx,dy, marker)
   local x = (display.contentWidth * 0.5 + ((dx - dy) * tileHeight)) 
   local y = (((dx + dy)/2) * tileHeight) - (tileHeight/2)
   local resource = display.newCircle( x, y, 20 )
-  resource:setFillColor(marker)
-  resource.alpha = .25
+  print(marker.g)
+  resource:setFillColor(marker.r, marker.g, marker.b)
+  resource.alpha = 1
 end
 
 function buildResources()
@@ -82,9 +89,8 @@ function buildResources()
     if #resources > 0 then
       for i=1,#resources do
         if resources[i].x == pTile.x and resources[i].y == pTile.y then
-          print('blocked tile at x:' .. pTile.x .. ' y:' .. pTile.y)
           blocked = true
-          break
+          break --end the loop because we found a conflict
         else
           blocked = false          
         end
@@ -94,8 +100,7 @@ function buildResources()
     end
     if blocked == false then
       resources[#resources+1] = {x=pTile.x, y=pTile.y}
-      drawResource(pTile.x, pTile.y, .5)
-      print(pTile.x .. ',' .. pTile.y)
+      drawResource(pTile.x, pTile.y, green)
     end
   end
 end
