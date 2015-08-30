@@ -4,13 +4,6 @@ display.setStatusBar( display.HiddenStatusBar )
 math.randomseed( os.time() ) 
 
 local map = {}   -- table representing each grid position
-local resources = {}  -- table tracking the markers we are putting on the grid
-
--- The following is trickery to get the 255 scale rgb numbers (x/255)
-local resourceColor = {{name = 'red', r=.835, g=.059, b=.145},
-                       {name = 'blue', r=.2, g=.412, b=.909},
-                       {name = 'green', r=.0, g=.6, b=.223},
-                       {name = 'yellow', r=.933, g=.698, b=.066}}
 
 local tileWidth = 128
 local tileHeight = 64
@@ -55,49 +48,22 @@ function drawGrid()
         -- you have to do this because the second row of tiles is .5 above the first row
         tile.y = (tileHeight/2) + ((x + y)/2) 
         
-        -- make a tile walkable
-        --gridRow[col] = 0
       end
       -- add gridRow table to the map table
       map[row] = gridRow
    end
 end
 
--- draw a marker on the grid
-function drawResource(dx,dy, marker)
+function drawCube(dx,dy)
   local x = (display.contentWidth * 0.5 + ((dx - dy) * tileHeight)) 
   local y = (((dx + dy)/2) * tileHeight) - (tileHeight/2)
-  local resource = display.newCircle( x, y, 20 )
-  resource:setFillColor(marker.r, marker.g, marker.b)
-  resource.alpha = 1
+  local myImage = display.newImageRect( "assets/cube.png", tileWidth/2, tileHeight/1.5 )
+
+  -- position the image
+  myImage:translate( x, y )
+
+
 end
-
-function buildResources()
-  while #resources < 10 do
-
-    local x = math.random(1,5)
-    local y = math.random(1,5)
-    local pTile = {x=math.random(1,5), y=math.random(1,5)} 
-    local blocked = true
-
-    if #resources > 0 then
-      for i=1,#resources do
-        if resources[i].x == pTile.x and resources[i].y == pTile.y then
-          blocked = true
-          break --end the loop because we found a conflict
-        else
-          blocked = false          
-        end
-      end
-    else
-      blocked = false
-    end
-    if blocked == false then
-      resources[#resources+1] = {x=pTile.x, y=pTile.y}
-      drawResource(pTile.x, pTile.y, resourceColor[math.random(1,4)])
-    end
-  end
-end
-
 drawGrid()
-buildResources()
+drawCube(3,4)
+
