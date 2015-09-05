@@ -20,6 +20,7 @@ local bg = display.newRect( display.screenOriginX,
 bg.x = display.contentCenterX
 bg.y = display.contentCenterY
 
+
 -- this is to use the standard RGB color and still get a value between 0 and 1 for the setFillColor
 bg:setFillColor( 000/255, 168/255, 254/255 ) 
 
