@@ -65,5 +65,5 @@ function drawCube(dx,dy)
 
 end
 drawGrid()
-drawCube(3,4)
+drawCube(4,4)
 

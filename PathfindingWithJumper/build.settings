@@ -1,0 +1,13 @@
+-- build.settings for project: Pathfinding with Jumper-- Managed with http://OutlawGameTools.com-- Copyright 2013 Jay Jennings. All Rights Reserved.-- cpmgen build.settings
+settings =
+{
+	orientation =
+	{
+		default ="landscapeRight",
+		supported =
+		{
+			"landscapeLeft","landscapeRight"
+		},
+	},
+
+}
