@@ -36,16 +36,28 @@ end
 
 function nextStep(dx,dy)
   local cx,cy = getCoordinates(dx,dy)
-  transition.to(player, {time=500, x = cx, y = cy})
 end
 
 function walkPath( path )
+  pth.idx = 2
   if path then
       for node, count in path:nodes() do
         print(node:getX().. ', ' .. node:getY()) 
         nextStep(node:getX(), node:getY())
+        path[#path+1] = {x=dx, y=dy}
       end
+      if #path > 1 then
+        local function nextStep(obj)
+      if path.idx < #path+1 then
+        local pos = pixelXYFromGridXY(path[path.idx].x,path[path.idx].y)
+        transition.to(path, {time=500, x=pos.x, y=pos.y, onComplete=nextStep})
+     --else
+     --  mapStartPos = tank.myPath[tank.idx-1]
+     --end
+      path.idx = path.idx + 1
     end
+    nextStep()
+  end
 end
 
 function getPath( tile )
