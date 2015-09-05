@@ -8,6 +8,7 @@ local walkable = 0 -- used by Jumper to mark obstacles
 local map = {}   -- table representing each grid position
 local player = {}
 local pathToWalk = {}
+local mode = "ORTHOGONAL"
 
 local tileWidth = 128
 local tileHeight = 64
@@ -28,59 +29,61 @@ bg:setFillColor( 000/255, 168/255, 254/255 )
 group = display.newGroup( )
 group.x = display.contentCenterX -- center the grid on the screen
 
+gamePiece = display.newGroup( )
+
 function getCoordinates(dx,dy)
   local x = (display.contentWidth * 0.5 + ((dx - dy) * tileHeight)) 
   local y = (((dx + dy)/2) * tileHeight) - (tileHeight/2)
   return x,y
 end
 
-function nextStep(dx,dy)
-  local cx,cy = getCoordinates(dx,dy)
-end
-
-function walkPath( path )
-  pth.idx = 2
-  if path then
-      for node, count in path:nodes() do
-        print(node:getX().. ', ' .. node:getY()) 
-        nextStep(node:getX(), node:getY())
-        path[#path+1] = {x=dx, y=dy}
+function walkPath()
+  player.idx = 2
+  player.myPath = {}
+  for node, count in player.pathNodes do
+    local xPos, yPos = node:getPos()
+    player.myPath[#player.myPath+1] = {x=xPos, y=yPos}
+  end
+  if #player.myPath > 1 then
+    local function nextStep(obj)
+      if player.idx < #player.myPath+1 then
+        local cx,cy = getCoordinates(player.myPath[player.idx].x,player.myPath[player.idx].y)
+        player.row = player.myPath[player.idx].x
+        player.col = player.myPath[player.idx].y
+        --player.x = cx
+        --player.y = cy
+        transition.to(player, {time=500, x=cx, y=cy, onComplete=nextStep})
       end
-      if #path > 1 then
-        local function nextStep(obj)
-      if path.idx < #path+1 then
-        local pos = pixelXYFromGridXY(path[path.idx].x,path[path.idx].y)
-        transition.to(path, {time=500, x=pos.x, y=pos.y, onComplete=nextStep})
-     --else
-     --  mapStartPos = tank.myPath[tank.idx-1]
-     --end
-      path.idx = path.idx + 1
+      player.idx = player.idx + 1
     end
     nextStep()
   end
 end
 
-function getPath( tile )
+
+function getPathNodes( tile )
    -- create a Jumper Grid object by passing in our map table
    local grid = Grid(map)
 
    local pather = Pathfinder(grid, 'ASTAR', walkable)
-   pather:setMode("ORTHOGONAL") 
+   pather:setMode(mode) 
 
    -- Calculates the path, and its length
-   return pather:getPath(player.row, player.col, tile.row, tile.col)
-
-   -- if path then
-   --    for node, count in path:nodes() do
-   --      transitionPlayer(node:getX(), node:getY())
-   --    end
-   --  end
+   local path = pather:getPath(player.row, player.col, tile.row, tile.col)
+   return path:nodes()
 end
 
 function onTileSelect( event )
   if ( event.phase == "ended" ) then
     --pathToWalk = getPath( event.target )
-    walkPath(getPath( event.target ))
+    player.pathNodes = {}
+    local pathNodes = getPathNodes( event.target )
+    if (pathNodes) then
+      player.pathNodes = pathNodes
+      walkPath()
+    else
+      print("nodes was nil")
+    end
   end
   return true
 end
@@ -104,7 +107,6 @@ function drawGrid()
       
       for col = 0, 5 do
         -- draw a diamond shaped tile
-        --local vertices = { 0,-16, -64,16, 0,48, 64,16 }
         local tile = buildTile()
         group:insert( tile )
         
@@ -127,16 +129,6 @@ function drawGrid()
    end
 end
 
-function transitionPlayer(dx,dy)
-  local nx, ny = getCoordinates(dx,dy)
-  transition.to(player, {time=500, x=nx, y=ny})
-  --position the image
-  player.row = dx
-  player.col = dy
-  player.x = nx
-  player.y = ny
-end
-
 function drawPlayer(dx,dy)
   local x,y  = getCoordinates(dx,dy)
   player = display.newImageRect("assets/cube.png", tileWidth/2, tileHeight/1.5 )
@@ -146,8 +138,8 @@ function drawPlayer(dx,dy)
   player.col = dy
   player.x = x
   player.y = y
+  gamePiece:insert(player)
 end
 
 drawGrid()
 drawPlayer(3,4)
-
