@@ -14,6 +14,7 @@ local tileHeight = 64
 
 local map = {}   -- table representing each grid position
 local resources = {}  -- table tracking the markers we are putting on the grid
+local tiles = {} -- table to store our tiles
 
 -- The following is trickery to get the 255 scale rgb numbers (x/255)
 local resourceColor = {{name = 'red', r=.835, g=.059, b=.145},
@@ -42,6 +43,14 @@ group.x = display.contentCenterX -- center the grid on the screen
 
 gamePiece = display.newGroup( )
 
+function checkPlayerOnResource( event )
+  if player.walking == true then
+    print('player on the move')
+  elseif player.onResource == true then
+    print('getting resource units')
+  end
+end
+
 function getCoordinates(dx,dy)
   local x = (display.contentWidth * 0.5 + ((dx - dy) * tileHeight)) 
   local y = (((dx + dy)/2) * tileHeight) - (tileHeight/2)
@@ -51,24 +60,28 @@ end
 function walkPath()
   player.idx = 2
   player.myPath = {}
+  player.walking = false
+
   for node, count in player.pathNodes do
     local xPos, yPos = node:getPos()
     player.myPath[#player.myPath+1] = {x=xPos, y=yPos}
   end
   if #player.myPath > 1 then
+    player.walking = true
     local function nextStep(obj)
       if player.idx < #player.myPath+1 then
         local cx,cy = getCoordinates(player.myPath[player.idx].x,player.myPath[player.idx].y)
         player.row = player.myPath[player.idx].x
         player.col = player.myPath[player.idx].y
         transition.to(player, {time=500, x=cx, y=cy, onComplete=nextStep})
+      else 
+        player.walking = false
       end
       player.idx = player.idx + 1
     end
     nextStep()
   end
 end
-
 
 function getPathNodes( tile )
    -- create a Jumper Grid object by passing in our map table
@@ -90,11 +103,32 @@ function onTileSelect( event )
     if (pathNodes) then
       player.pathNodes = pathNodes
       walkPath()
+      if (event.target.hasResource == true) then
+        print('tile has resource')
+        player.onResource = true
+      else
+        player.onResource = false
+      end
     else
       print("nodes was nil")
     end
   end
   return true
+end
+
+function placeResourceOnTile( dx, dy )
+  print('called placeReourceOnTile and tiles count is ' .. #tiles)
+  if #tiles > 0 then
+    for i=1,#tiles do
+      print('looking at tile ' .. tiles[i].row .. ',' .. tiles[i].col)
+      if tiles[i].row == dx and tiles[i].col == dy then
+        tiles[i].hasResource = true
+        tiles[i].isEmpty = false
+        print('placed resource on tile ' .. tiles[i].row .. ',' .. tiles[i].col )
+        break --end the loop because we found a conflict
+      end
+    end
+  end 
 end
 
 function buildTile()
@@ -108,8 +142,7 @@ function buildTile()
 
   return tile
 end
--- draw a tile map to the screen
--- populate the tile map
+
 function drawGrid()
    for row = 0, 5 do
       local gridRow = {}
@@ -132,7 +165,13 @@ function drawGrid()
         tile.isEmpty = true
         tile.hasResource = false
         tile:addEventListener("touch", onTileSelect)
-        gridRow[col] = 0
+        
+        --resources[#resources+1] = {x=pTile.x, y=pTile.y}
+        tiles[#tiles+1] = tile
+        print(tiles[#tiles].row)
+
+        -- telling the pathfinding if the grid loc is traversable 
+        gridRow[col] = 0 -- zero means you can walk here
       end
       -- add gridRow table to the map table
       map[row] = gridRow
@@ -159,10 +198,6 @@ function drawResource(dx,dy, marker)
   resource.alpha = 1
 end
 
-function addResourceToTile(dx,dy)
-
-end
-
 function buildResources()
   while #resources < 10 do
 
@@ -186,10 +221,14 @@ function buildResources()
     if blocked == false then
       resources[#resources+1] = {x=pTile.x, y=pTile.y}
       drawResource(pTile.x, pTile.y, resourceColor[math.random(1,4)])
+      placeResourceOnTile(pTile.x, pTile.y)
     end
   end
 end
 
-buildResources()
+
 drawGrid()
+buildResources()
 drawPlayer(3,4)
+
+Runtime:addEventListener( "enterFrame", checkPlayerOnResource )
