@@ -180,7 +180,7 @@ end
 
 function drawPlayer(dx,dy)
   local x,y  = getCoordinates(dx,dy)
-  player = display.newImageRect("assets/cube.png", tileWidth/2, tileHeight/1.5 )
+  player = display.newImageRect("assets/cube.png", tileWidth/2.5, tileHeight/1.5 )
   player:translate( x, y )
   --position the image
   player.row = dx
